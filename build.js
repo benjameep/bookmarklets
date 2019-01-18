@@ -9,7 +9,11 @@ const loader = read('src/loader.js')
 
 const bookmarklets = [{
     name:'quizsaver',
-    url:'https://byui.instructure.com/files/6526704/download',
+    url:'https://byui.instructure.com/files/6572492/download',
 }]
+
+console.log(bookmarklets.map(b => b.src=
+    `${loader}("${b.name}","${b.url}",function(){window.${b.name}.default()})`
+))
 
 fs.writeFileSync(path.join(__dirname,'README.md'),ejs.render(template,{loader,bookmarklets}))
