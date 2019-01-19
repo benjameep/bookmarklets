@@ -31,17 +31,17 @@ var $$ = (q, elm) => [].slice.apply((elm || document).querySelectorAll(q));
 export default (function(){
 
   var form = document.querySelector("#submit_quiz_form");
-  if(!form) return console.error.bind(null,'Unable to run the quizsaver');
+  if(!form || window.jQuery == 'undefined') {
+    $.flashError('Unable to run the Quiz Saver')
+    return console.error.bind(null,'Unable to run the quizsaver');
+  }
   var questions = $$("#questions .question", form);
   var quizId = form.action.match(/\d+/g).join("_");
   var saved = JSON.parse(localStorage.getItem(quizId) || "{}");
+  
+  function run() {
+    var numAnswered = 0
 
-  $(form).submit(function() {
-    run();
-    return true;
-  });
-
-  return function run() {
     var answers = Array.from(questions)
       .map(question => {
         var type = types.find(({ q }) => question.querySelector(q));
@@ -52,6 +52,7 @@ export default (function(){
           console.log(
             "answering " + question.querySelector(".question_name").innerText
           );
+          numAnswered++
           saved[question.id].forEach((answer, i) => {
             type.set(answers[i], answer);
           });
@@ -66,6 +67,19 @@ export default (function(){
       .reduce((o, n) => ((o[n.id] = n.answers), o), {});
 
     localStorage.setItem(quizId, JSON.stringify(answers));
+    
+    if(numAnswered > 1){
+      $.flashMessage(`${numAnswered} Question Answer${numAnswered==1?'':'s'} Loaded`)
+    } else {
+      $.flashMessage('Quiz Answers Saved')
+    }
   }
+
+  $(form).submit(function() {
+    run();
+    return true;
+  });
+
+  return run
 
 })()

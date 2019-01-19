@@ -1,1 +1,1 @@
-(function(i,s,f){var d=document,e=d.createElement('script');d.getElementById(i)?f():(e.onload=f,e.src=s,e.id=i,d.body.appendChild(e))})
+(function(i,s,f){var d=document,e=d.createElement("script");d.getElementById(i)?f():(e.onload=f,e.src=s,e.id=i,d.body.appendChild(e))})
