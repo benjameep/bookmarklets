@@ -1,5 +1,3 @@
-# Ben's Bookmarklets
-
 ## Canvas Quiz Save/Load
 
 **Drag this link to your bookmarks bar -->** <a href="<%= load('quizsaver','https://benjameep.tech/bookmarklets/dist/quizsaver.js') %>">Quiz Save/Load</a> **<--**
