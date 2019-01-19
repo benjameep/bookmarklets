@@ -2,7 +2,7 @@
 
 ## Canvas Quiz Save/Load
 
-**Drag this link to your bookmarks bar -->** <a href="<%= load('quizsaver','https://benjameep.tech/bootkmarklets/dist/quizsaver.js') %>">Quiz Save/Load</a> **<--**
+**Drag this link to your bookmarks bar -->** <a href="<%= load('quizsaver','https://benjameep.tech/bookmarklets/dist/quizsaver.js') %>">Quiz Save/Load</a> **<--**
 
 When taking a Quiz in Canvas that has multiple attempts. It can become tiresome to re-enter all your answers just to update the one question that you got wrong. 
 
