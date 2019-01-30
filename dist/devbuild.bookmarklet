@@ -1,0 +1,1 @@
+javascript:(function(i%2Cs%2Cf)%7Bvar%20d%3Ddocument%2Ce%3Dd.createElement(%22script%22)%2Cn%3Dd.getElementById(i)%3Bn%26%26n.parentNode.removeChild(n)%3B(e.src%3Ds%2Ce.id%3Di%2Cd.body.appendChild(e))%7D)(%22quizsaver%22%2C%22https%3A%2F%2F127.0.0.1%3A8080%2F%22%2C%22function()%7Bwindow.quizsaver.default()%7D%22)

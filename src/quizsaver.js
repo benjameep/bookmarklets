@@ -1,85 +1,92 @@
-var types = [
-  {
-    q: "[type=checkbox],[type=radio]",
-    get: elm => elm.checked,
-    set: (elm, val) => (elm.checked = val),
-    nullval: false
-  },
-  {
-    q: "[type=text]",
-    get: elm => elm.value,
-    set: (elm, val) => (elm.value = val),
-    nullval: ""
-  },
-  {
-    q: "select",
-    get: elm => elm.selectedIndex,
-    set: (elm, val) => (elm.selectedIndex = val),
-    nullval: 0
-  },
-  {
-    q: ".ic-RichContentEditor textarea",
-    get: elm => tinyMCE.get(elm.id).getContent(),
-    set: (elm, val) => tinyMCE.get(elm.id).setContent(val),
-    nullval: ""
-  }
-];
+let form = document.querySelector("#submit_quiz_form"), 
+  quizId, numLoaded, numSaved
 
-var $$ = (q, elm) => [].slice.apply((elm || document).querySelectorAll(q));
+/**** Helper Method to Iterate Entries ****/
+function iterateEntries(entries,fn){
+	for(var [name,value] of entries){
+		if (!name.startsWith("question_") || name === "question_text") continue;
+		var elm = form.elements.namedItem(name)
+		var $question = $(elm).closest('.question')
+    fn(name,value,elm,$question)
+	}
+}
 
-
-export default (function(){
-
-  var form = document.querySelector("#submit_quiz_form");
-  if(!form || window.jQuery == 'undefined') {
-    $.flashError('Unable to run the Quiz Saver')
-    return console.error.bind(null,'Unable to run the quizsaver');
-  }
-  var questions = $$("#questions .question", form);
-  var quizId = form.action.match(/\d+/g).join("_");
-  var saved = JSON.parse(localStorage.getItem(quizId) || "{}");
-  
-  function run() {
-    var numAnswered = 0
-
-    var answers = Array.from(questions)
-      .map(question => {
-        var type = types.find(({ q }) => question.querySelector(q));
-        if (!type) return;
-        var answers = $$(type.q, question);
-        var hasBeenAnswered = !answers.every(n => type.get(n) === type.nullval);
-        if (saved[question.id] && !hasBeenAnswered) {
-          console.log(
-            "answering " + question.querySelector(".question_name").innerText
-          );
-          numAnswered++
-          saved[question.id].forEach((answer, i) => {
-            type.set(answers[i], answer);
-          });
-        }
-        return {
-          id: question.id,
-          hasBeenAnswered,
-          answers: answers.map(type.get)
-        };
-      })
-      .filter(n => n && n.hasBeenAnswered)
-      .reduce((o, n) => ((o[n.id] = n.answers), o), {});
-
-    localStorage.setItem(quizId, JSON.stringify(answers));
-    
-    if(numAnswered > 1){
-      $.flashMessage(`${numAnswered} Question Answer${numAnswered==1?'':'s'} Loaded`)
+/**** Load Saved *****/
+function loadSaved(){
+  var saved = new URLSearchParams(localStorage.getItem(quizId)),
+	  unanswered = {}
+  // For each of the questions
+  iterateEntries(saved.entries(),(name,value,elm,$question) => {
+    // If it has not been answered
+    if(!$question.hasClass('answered') || unanswered[$question.id]){
+      unanswered[$question.id] = true
+      // Set the value
+      if(elm.type == 'textarea')
+        tinyMCE.get(elm.id).setContent(value)
+      else if($(elm).is(':checkbox'))
+        $(elm).prop('checked',value==='true')
+      else
+        elm.value = value
+        
+      // Manually update the question so the 'answered' class is up to data
+      $(elm).trigger('change')
+      // Increment count
+      numLoaded++
+      // Cause logging is useful
+      console.info(`[quizsaver] Answered ${name} with "${value}"`)
     } else {
-      $.flashMessage('Quiz Answers Saved')
+      console.info(`[quizsaver] Skipped ${name} with "${value}"`)
     }
+  })
+}
+
+/**** Save Answers ****/
+function saveAnswers(){
+  var formData = new FormData(form),
+      saved = new URLSearchParams()
+  numSaved = 0
+
+  // For each of the questions
+  iterateEntries(formData.entries(),(name,value,elm,$question) => {
+    
+    if($question.hasClass('answered')){
+      if(elm.type == 'textarea')
+        value = tinyMCE.get(elm.id).getContent()
+      else if($(elm).is(':checkbox'))
+        value = $(elm).filter('[id]').prop('checked')
+      else 
+        value = value
+  
+      saved.set(name,value)
+  
+      // Increment count
+      numSaved++
+      // Cause logging is useful
+      console.info(`[quizsaver] Saved ${name} with "${value}"`)
+    } else {
+      console.info(`[quizsaver] Unanswered ${name} with "${value}"`)
+    }
+
+  })
+
+  // Save to Local Storage
+  localStorage.setItem(quizId,saved.toString())
+}
+
+export default function run(){
+  if(form){
+    quizId = form.action.match(/\d+/g).join("_");
+    loadSaved()
+    saveAnswers()
+    $.flashMessage([
+      numLoaded&&`${numLoaded} Question Answer${numLoaded==1?'':'s'} Loaded`,
+      numSaved&&`${numSaved} Question Answer${numSaved==1?'':'s'} Saved`,
+    ].filter(n => n).join(' '))
+  } else {
+    window.$ && window.$.flashError && 
+    $.flashError('Unable to run the Quiz Saver on this page')
+    console.error('Unable to run the Quiz Saver on this page') 
   }
+}
 
-  $(form).submit(function() {
-    run();
-    return true;
-  });
-
-  return run
-
-})()
+form && $(form).submit(() => (run(),true))
