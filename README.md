@@ -12,6 +12,8 @@ When loading it will only fill the questions that have not been touched (to avoi
 
 #### Change Log
 ```
+v1.2 Fixed errors being thrown when question not found on page
+
 v1.1 Fixed giving wrong answers on shuffled questions
 
 v1.0 First version

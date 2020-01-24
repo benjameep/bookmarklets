@@ -5,9 +5,11 @@ let form = document.querySelector("#submit_quiz_form"),
 function iterateEntries(entries,fn){
 	for(var [name,value] of entries){
 		if (!name.startsWith("question_") || name === "question_text") continue;
-		var elm = form.elements.namedItem(name)
-		var $question = $(elm).closest('.question')
-    fn(name,value,elm,$question)
+    var elm = form.elements.namedItem(name)
+    if(elm){
+      var $question = $(elm).closest('.question')
+      fn(name,value,elm,$question)
+    }
 	}
 }
 
