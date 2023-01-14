@@ -20,7 +20,7 @@
     "live-server": "^1.2.1",
     "live-server-https": "0.0.2",
     "webpack": "^4.28.4",
-    "webpack-cli": "^3.2.1"
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {}
 }
